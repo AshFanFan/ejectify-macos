@@ -5,25 +5,26 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
 
       - name: Build Ejectify App
         run: |
-          xcodebuild archive \
+          xcodebuild build \
             -project Ejectify.xcodeproj \
             -scheme Ejectify \
             -configuration Release \
-            -destination "platform=macOS,arch=x86_64" \
-            -archivePath build/Ejectify.xcarchive \
-            CODE_SIGN_IDENTITY="" \
+            -derivedDataPath build \
+            ARCHS="x86_64" \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=YES
 
           mkdir -p output
-          cp -R build/Ejectify.xcarchive/Products/Applications/Ejectify.app output/
+          cp -R build/Build/Products/Release/Ejectify.app output/
           cd output && zip -r Ejectify-A1989-Intel.zip Ejectify.app
 
       - name: Upload Artifact
