@@ -1,3 +1,4 @@
+YAML
 name: Build Ejectify for A1989 Intel Mac
 
 on:
@@ -10,16 +11,23 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v4
 
-      - name: Disable legacy LaunchAtLogin script
+      - name: Remove legacy LaunchAtLogin build script
         run: |
           python3 -c "
-          with open('Ejectify.xcodeproj/project.pbxproj', 'r') as f:
-              content = f.read()
-          import re
-          content = re.sub(r'shellScript = .*?copy-helper-swiftpm\.sh.*?;', 'shellScript = \"echo skip\\\\n\";', content)
-          with open('Ejectify.xcodeproj/project.pbxproj', 'w') as f:
-              f.write(content)
+          path = 'Ejectify.xcodeproj/project.pbxproj'
+          with open(path, 'r') as f:
+              lines = f.readlines()
+          new_lines = []
+          for line in lines:
+              if 'copy-helper-swiftpm.sh' in line:
+                  new_lines.append('\t\t\tshellScript = \"exit 0;\\\\n\";\n')
+              else:
+                  new_lines.append(line)
+          with open(path, 'w') as f:
+              f.writelines(new_lines)
           "
+          echo "Verified project file:"
+          grep "shellScript" Ejectify.xcodeproj/project.pbxproj
 
       - name: Build Ejectify App
         run: |
